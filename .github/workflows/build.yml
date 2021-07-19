@@ -17,6 +17,7 @@ jobs:
     env:
       POLICY: manylinux_2_24
       PLATFORM: x86_64
+      COMMIT_SHA: valhalla_python
 
     steps:
       - name: Checkout

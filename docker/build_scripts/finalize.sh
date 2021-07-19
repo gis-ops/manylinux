@@ -85,6 +85,34 @@ clean_pyc /opt/_internal
 # remove cache
 rm -rf /root/.cache
 
+# /MOD START: install valhalla and vroom dependencies
+if [ "${AUDITWHEEL_POLICY}" == "manylinux2010" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
+	PACKAGE_MANAGER=yum
+	COMPILE_DEPS="boost-devel sqlite-devel libspatialite-devel protobuf-devel libcurl-devel luajit-devel geos-devel asio-devel openssl-devel glpk-devel"
+elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
+	PACKAGE_MANAGER=apt
+	COMPILE_DEPS="libssl-dev libasio-dev libglpk-dev ninja-build libboost-all-dev libspatialite-dev libprotobuf-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev protobuf-compiler"
+else
+	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
+	exit 1
+fi
+
+if [ "${PACKAGE_MANAGER}" == "yum" ]; then
+	yum -y install ${COMPILE_DEPS}
+	yum clean all
+	rm -rf /var/cache/yum
+elif [ "${PACKAGE_MANAGER}" == "apt" ]; then
+	export DEBIAN_FRONTEND=noninteractive
+	apt-get update -qq
+	apt-get install -qq -y --no-install-recommends ${COMPILE_DEPS}
+	apt-get clean -qq
+	rm -rf /var/lib/apt/lists/*
+else
+	echo "Not implemented"
+	exit 1
+fi
+
+
 hardlink -cv /opt/_internal
 
 # update system packages

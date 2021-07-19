@@ -46,7 +46,7 @@ jobs:
       - name: Deploy image
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: docker/Dockerfile
           push: true
           tags: |
             ghcr.io/gis-ops/manylinux:valhalla_py

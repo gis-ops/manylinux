@@ -28,11 +28,10 @@ for PREFIX in $(find /opt/_internal/ -mindepth 1 -maxdepth 1 \( -name 'cpython*'
 	ABI_TAG=$(${PREFIX}/bin/python ${MY_DIR}/python-tag-abi-tag.py)
 	ln -s ${PREFIX} /opt/python/${ABI_TAG}
 	# Make versioned python commands available directly in environment.
-	PYVERS=$(${PREFIX}/bin/python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
 	if [[ "${PREFIX}" == *"/pypy"* ]]; then
-		ln -s ${PREFIX}/bin/python /usr/local/bin/pypy${PYVERS}
+		ln -s ${PREFIX}/bin/python /usr/local/bin/pypy${PY_VER}
 	else
-		ln -s ${PREFIX}/bin/python /usr/local/bin/python${PYVERS}
+		ln -s ${PREFIX}/bin/python /usr/local/bin/python${PY_VER}
 	fi
 done
 
@@ -43,16 +42,8 @@ source $TOOLS_PATH/bin/activate
 
 # Install default packages
 pip install -U --require-hashes -r $MY_DIR/requirements3.9.txt
-# Install certifi and auditwheel
-pip install -U --require-hashes -r $MY_DIR/requirements-tools.txt
-
-# Make auditwheel available in PATH
-ln -s $TOOLS_PATH/bin/auditwheel /usr/local/bin/auditwheel
-
-# Make CMake available in PATH
-ln -s $TOOLS_PATH/bin/cmake /usr/local/bin/cmake
-ln -s $TOOLS_PATH/bin/cpack /usr/local/bin/cpack
-ln -s $TOOLS_PATH/bin/ctest /usr/local/bin/ctest
+# Install certifi and pipx
+pip install -U --require-hashes -r $MY_DIR/requirements-base-tools.txt
 
 # Make pipx available in PATH,
 # Make sure when root installs apps, they're also in the PATH
@@ -62,6 +53,7 @@ cat <<EOF > /usr/local/bin/pipx
 set -euo pipefail
 
 if [ \$(id -u) -eq 0 ]; then
+	export PIPX_HOME=/opt/_internal/pipx
 	export PIPX_BIN_DIR=/usr/local/bin
 fi
 ${TOOLS_PATH}/bin/pipx "\$@"
@@ -78,6 +70,14 @@ export SSL_CERT_FILE=/opt/_internal/certs.pem
 
 # Deactivate the tools virtual environment
 deactivate
+
+# install other tools with pipx
+pushd $MY_DIR/requirements-tools
+for TOOL_PATH in $(find . -type f); do
+	TOOL=$(basename ${TOOL_PATH})
+	pipx install --pip-args="--require-hashes -r" ${TOOL}
+done
+popd
 
 # We do not need the precompiled .pyc and .pyo files.
 clean_pyc /opt/_internal

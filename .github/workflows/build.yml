@@ -9,6 +9,10 @@ on:
       - "docker/**"
       - "*.sh"
 
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_manylinux:
     name: manylinux_2_24_x86_64

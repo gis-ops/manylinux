@@ -50,7 +50,7 @@ elif [ "${POLICY}" == "manylinux2014" ]; then
 	else
 		BASEIMAGE="${MULTIARCH_PREFIX}centos:7"
 	fi
-	DEVTOOLSET_ROOTPATH="/opt/rh/devtoolset-9/root"
+	DEVTOOLSET_ROOTPATH="/opt/rh/devtoolset-10/root"
 	PREPEND_PATH="${DEVTOOLSET_ROOTPATH}/usr/bin:"
 	if [ "${PLATFORM}" == "i686" ]; then
 		LD_LIBRARY_PATH_ARG="${DEVTOOLSET_ROOTPATH}/usr/lib:${DEVTOOLSET_ROOTPATH}/usr/lib/dyninst"
@@ -59,6 +59,11 @@ elif [ "${POLICY}" == "manylinux2014" ]; then
 	fi
 elif [ "${POLICY}" == "manylinux_2_24" ]; then
 	BASEIMAGE="${MULTIARCH_PREFIX}debian:9"
+	DEVTOOLSET_ROOTPATH=
+	PREPEND_PATH=
+	LD_LIBRARY_PATH_ARG=
+elif [ "${POLICY}" == "musllinux_1_1" ]; then
+	BASEIMAGE="${MULTIARCH_PREFIX}alpine:3.12"
 	DEVTOOLSET_ROOTPATH=
 	PREPEND_PATH=
 	LD_LIBRARY_PATH_ARG=
@@ -77,6 +82,11 @@ BUILD_ARGS_COMMON="
 	--rm -t quay.io/pypa/${POLICY}_${PLATFORM}:${COMMIT_SHA}
 	-f docker/Dockerfile docker/
 "
+
+# Force plain output on CI
+if [ "${CI:-}" == "true" ]; then
+	BUILD_ARGS_COMMON="--progress plain ${BUILD_ARGS_COMMON}"
+fi
 
 if [ "${MANYLINUX_BUILD_FRONTEND}" == "docker" ]; then
 	docker build ${BUILD_ARGS_COMMON}

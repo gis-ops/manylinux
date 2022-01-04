@@ -1,4 +1,3 @@
 auditwheel
-certifi
 cmake
-pipx
+patchelf

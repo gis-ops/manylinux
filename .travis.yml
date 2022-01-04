@@ -28,16 +28,18 @@ jobs:
       env: POLICY="manylinux2014" PLATFORM="aarch64"
     - arch: s390x
       env: POLICY="manylinux2014" PLATFORM="s390x"
-    - arch: ppc64le
-      env: POLICY="manylinux2014" PLATFORM="ppc64le" MANYLINUX_BUILD_FRONTEND="buildkit"
     - arch: arm64-graviton2
       virt: vm
       group: edge
       env: POLICY="manylinux_2_24" PLATFORM="aarch64"
     - arch: s390x
       env: POLICY="manylinux_2_24" PLATFORM="s390x"
-    - arch: ppc64le
-      env: POLICY="manylinux_2_24" PLATFORM="ppc64le" MANYLINUX_BUILD_FRONTEND="buildkit"
+    - arch: arm64-graviton2
+      virt: vm
+      group: edge
+      env: POLICY="musllinux_1_1" PLATFORM="aarch64"
+    - arch: s390x
+      env: POLICY="musllinux_1_1" PLATFORM="s390x"
 
 before_install:
   - if [ -d "${HOME}/buildx-cache/.buildx-cache-${POLICY}_${PLATFORM}" ]; then cp -rlf ${HOME}/buildx-cache/.buildx-cache-${POLICY}_${PLATFORM} ./; fi
@@ -57,7 +59,7 @@ deploy:
   provider: script
   script: COMMIT_SHA=${TRAVIS_COMMIT} ./deploy.sh
   on:
-    branch: master
+    branch: main
     repo: pypa/manylinux
 
 after_script:

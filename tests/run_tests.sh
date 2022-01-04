@@ -12,6 +12,8 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	export DEBIAN_FRONTEND=noninteractive
 	PACKAGE_MANAGER=apt
 	apt-get update -qq
+elif [ "${AUDITWHEEL_POLICY}" == "musllinux_1_1" ]; then
+	PACKAGE_MANAGER=apk
 else
 	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
 	exit 1
@@ -41,6 +43,7 @@ for PYTHON in /opt/python/*/bin/python; do
 done
 
 # minimal tests for tools that should be present
+auditwheel --version
 autoconf --version
 automake --version
 libtoolize --version
@@ -60,6 +63,8 @@ if [ "${PACKAGE_MANAGER}" == "yum" ]; then
 	yum -y install openssh-clients
 elif [ "${PACKAGE_MANAGER}" == "apt" ]; then
 	apt-get install -qq -y --no-install-recommends openssh-client
+elif [ "${PACKAGE_MANAGER}" == "apk" ]; then
+	apk add --no-cache openssh-client
 else
 	echo "Unsupported package manager: '${PACKAGE_MANAGER}'"
 	exit 1

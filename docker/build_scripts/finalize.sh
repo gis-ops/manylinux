@@ -85,13 +85,15 @@ clean_pyc /opt/_internal
 # remove cache
 rm -rf /root/.cache
 
-# /MOD START: install valhalla and vroom dependencies
+# /MOD START: install valhalla and osrm dependencies
 if [ "${AUDITWHEEL_POLICY}" == "manylinux2010" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 	PACKAGE_MANAGER=yum
-	COMPILE_DEPS="boost-devel sqlite-devel libspatialite-devel protobuf-devel libcurl-devel luajit-devel geos-devel asio-devel openssl-devel glpk-devel"
+	COMPILE_DEPS="boost-devel sqlite-devel libspatialite-devel protobuf-devel libcurl-devel luajit-devel geos-devel"
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	PACKAGE_MANAGER=apt
-	COMPILE_DEPS="libssl-dev libasio-dev libglpk-dev ninja-build libboost-all-dev libspatialite-dev libprotobuf-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev protobuf-compiler"
+	# valhalla
+	COMPILE_DEPS="libboost-all-dev libspatialite-dev libprotobuf-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev protobuf-compiler"
+	COMPILE_DEPS="${COMPILE_DEPS} libbz2-dev libxml2-dev libzip-dev liblua5.2-dev libtbb-dev"
 else
 	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
 	exit 1

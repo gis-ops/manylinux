@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - "valhalla_python"
+      - "osrm_python"
     paths:
       - ".github/workflows/build.yml"
-      - "docker/**"
       - "*.sh"
 
 concurrency:
@@ -21,7 +21,7 @@ jobs:
     env:
       POLICY: manylinux_2_24
       PLATFORM: x86_64
-      COMMIT_SHA: valhalla_python
+      COMMIT_SHA: ${{ github.sha }}
 
     steps:
       - name: Checkout
@@ -47,10 +47,10 @@ jobs:
       - name: Build
         run: ./build.sh
 
-      - name: Deploy image
+      - name: Deploy ${GITHUB_REF##*/} image
         uses: docker/build-push-action@v2
         with:
           context: docker/Dockerfile
           push: true
           tags: |
-            ghcr.io/gis-ops/manylinux:valhalla_py
+            ghcr.io/gis-ops/manylinux:${GITHUB_REF##*/}

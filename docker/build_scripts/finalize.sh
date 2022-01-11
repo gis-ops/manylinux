@@ -92,8 +92,7 @@ if [ "${AUDITWHEEL_POLICY}" == "manylinux2010" ] || [ "${AUDITWHEEL_POLICY}" == 
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	PACKAGE_MANAGER=apt
 	# valhalla
-	COMPILE_DEPS="libboost-all-dev libspatialite-dev libprotobuf-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev protobuf-compiler"
-	COMPILE_DEPS="${COMPILE_DEPS} libbz2-dev libxml2-dev libzip-dev liblua5.2-dev libtbb-dev"
+	COMPILE_DEPS="libspatialite-dev libprotobuf-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev protobuf-compiler"
 else
 	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
 	exit 1

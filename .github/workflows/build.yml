@@ -44,6 +44,10 @@ jobs:
           key: buildx-cache-manylinux_2_24_x86_64-${{ hashFiles('docker/**') }}
           restore-keys: buildx-cache-manylinux_2_24_x86_64-
 
+      - name: Get branch name
+        run: |
+          echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
       - name: Build
         run: ./build.sh
 
@@ -53,4 +57,4 @@ jobs:
           context: docker/Dockerfile
           push: true
           tags: |
-            ghcr.io/gis-ops/manylinux:${GITHUB_REF##*/}
+            ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}

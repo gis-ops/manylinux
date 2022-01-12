@@ -48,13 +48,9 @@ jobs:
         run: |
           echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
-      - name: Build
+      - name: Build image
         run: ./build.sh
 
-      - name: Deploy ${GITHUB_REF##*/} image
-        uses: docker/build-push-action@v2
-        with:
-          context: docker/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}
+      - name: Push image
+        run: |
+          docker push ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}

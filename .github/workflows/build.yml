@@ -5,9 +5,8 @@ on:
     branches:
       - "valhalla_python"
       - "osrm_python"
-    paths:
-      - ".github/workflows/build.yml"
-      - "*.sh"
+    paths-ignore:
+      - '*.md'
 
 concurrency:
   group: test-${{ github.ref }}

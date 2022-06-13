@@ -39,7 +39,7 @@ jobs:
       - name: Setup cache
         uses: actions/cache@v2
         with:
-          path: .buildx-cache-manylinux_2_24_x86_64/*
+          path: .buildx-cache-manylinux_2_24_x86_64/
           key: buildx-cache-manylinux_2_24_x86_64-${{ hashFiles('docker/**') }}
           restore-keys: buildx-cache-manylinux_2_24_x86_64-
 

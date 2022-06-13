@@ -52,4 +52,5 @@ jobs:
 
       - name: Push image
         run: |
+          docker tag quay.io/pypa/manylinux_2_24_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}
           docker push ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}

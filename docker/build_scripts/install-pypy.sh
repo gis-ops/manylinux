@@ -35,8 +35,9 @@ case ${AUDITWHEEL_ARCH} in
 	*) echo "No PyPy for ${AUDITWHEEL_ARCH}"; exit 0;;
 esac
 
-TARBALL=pypy${PYTHON_VERSION}-v${PYPY_VERSION}-${PYPY_ARCH}.tar.bz2
-TMPDIR=/tmp/${TARBALL/.tar.bz2//}
+EXPAND_NAME=pypy${PYTHON_VERSION}-v${PYPY_VERSION}-${PYPY_ARCH}
+TMPDIR=/tmp/${EXPAND_NAME}
+TARBALL=${EXPAND_NAME}.tar.bz2
 PREFIX="/opt/_internal"
 
 mkdir -p ${PREFIX}
@@ -66,9 +67,6 @@ fi
 
 # remove debug symbols
 rm ${PREFIX}/bin/*.debug
-
-# We do not need the Python test suites
-find ${PREFIX} -depth \( -type d -a -name test -o -name tests \) | xargs rm -rf
 
 # We do not need precompiled .pyc and .pyo files.
 clean_pyc ${PREFIX}

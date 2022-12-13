@@ -1,6 +1,13 @@
 name: Build
 
 on:
+  workflow_dispatch:
+    inputs:
+      useCache:
+        description: Use GHA cache
+        type: boolean
+        required: false
+        default: true
   push:
     branches:
       - "valhalla_python"
@@ -9,13 +16,13 @@ on:
       - '*.md'
 
 concurrency:
-  group: test-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   build_manylinux:
     name: manylinux_2_24_x86_64
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       POLICY: manylinux_2_24
@@ -24,13 +31,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Setup cache
-        uses: actions/cache@v2
+        if: github.event_name != 'workflow_dispatch' || fromJSON(github.event.inputs.useCache)
+        uses: actions/cache@v3
         with:
           path: .buildx-cache-manylinux_2_24_x86_64/
           key: buildx-cache-manylinux_2_24_x86_64-${{ hashFiles('docker/**') }}

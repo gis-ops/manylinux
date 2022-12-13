@@ -7,14 +7,18 @@ set -exuo pipefail
 # Get script directory
 MY_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-if [ "${POLICY}" == "musllinux_1_1" ]; then
-	export NO_REGEX=NeedsStartEnd
-fi
-
 # Get build utilities
 source $MY_DIR/build_utils.sh
 
-# Install newest libtool
+if [ "${AUDITWHEEL_POLICY}" == "musllinux_1_1" ]; then
+	export NO_REGEX=NeedsStartEnd
+fi
+
+if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
+	export NO_UNCOMPRESS2=1
+fi
+
+# Install newest git
 check_var ${GIT_ROOT}
 check_var ${GIT_HASH}
 check_var ${GIT_DOWNLOAD_URL}

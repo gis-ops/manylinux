@@ -95,8 +95,8 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	COMPILE_DEPS="libspatialite-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev"
 	# install protobuf v3.21.1
 	git clone https://github.com/protocolbuffers/protobuf.git && cd protobuf
-	git submodule update --init --recursive
 	git checkout v21.1  # aka 3.21.1
+	git submodule update --init --recursive
 	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true"
 	make -C build -j$(nproc)
 	make -C build install

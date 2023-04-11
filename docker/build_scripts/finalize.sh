@@ -100,6 +100,17 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true"
 	make -C build -j$(nproc)
 	make -C build install
+elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+	PACKAGE_MANAGER=dnf
+	# valhalla, skip mjolnir deps for now
+	COMPILE_DEPS="libcurl-devel"
+	# install protobuf v3.21.1, not sure anymore why we're doing this?!
+	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
+	git checkout v21.1  # aka 3.21.1
+	git submodule update --init --recursive
+	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true"
+	make -C build -j$(nproc)
+	make -C build install
 else
 	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
 	exit 1
@@ -115,8 +126,12 @@ elif [ "${PACKAGE_MANAGER}" == "apt" ]; then
 	apt-get install -qq -y --no-install-recommends ${COMPILE_DEPS}
 	apt-get clean -qq
 	rm -rf /var/lib/apt/lists/*
+elif [ "${PACKAGE_MANAGER}" == "dnf" ]; then
+ 	dnf -y install --allowerasing ${COMPILE_DEPS}
+ 	dnf clean all
+ 	rm -rf /var/cache/yum
 else
-	echo "Not implemented"
+	echo "${PACKAGE_MANAGER} is not implemented"
 	exit 1
 fi
 

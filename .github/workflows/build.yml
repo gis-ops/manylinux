@@ -21,11 +21,11 @@ concurrency:
 
 jobs:
   build_manylinux:
-    name: manylinux_2_24_x86_64
+    name: manylinux_2_28_x86_64
     runs-on: ubuntu-22.04
 
     env:
-      POLICY: manylinux_2_24
+      POLICY: manylinux_2_28
       PLATFORM: x86_64
       COMMIT_SHA: ${{ github.sha }}
 
@@ -40,9 +40,9 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || fromJSON(github.event.inputs.useCache)
         uses: actions/cache@v3
         with:
-          path: .buildx-cache-manylinux_2_24_x86_64/
-          key: buildx-cache-manylinux_2_24_x86_64-${{ hashFiles('docker/**') }}
-          restore-keys: buildx-cache-manylinux_2_24_x86_64-
+          path: .buildx-cache-manylinux_2_28_x86_64/
+          key: buildx-cache-manylinux_2_28_x86_64-${{ hashFiles('docker/**') }}
+          restore-keys: buildx-cache-manylinux_2_28_x86_64-
 
       - name: Get branch name
         run: |
@@ -53,7 +53,7 @@ jobs:
 
       - name: Push image
         run: |
-          docker tag quay.io/pypa/manylinux_2_24_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}
-          docker image rm quay.io/pypa/manylinux_2_24_x86_64:${{ github.sha }}
+          docker tag quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
+          docker image rm quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }}
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/gis-ops/manylinux:${{ env.BRANCH }}
+          docker push ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}

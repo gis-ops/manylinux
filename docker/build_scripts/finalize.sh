@@ -108,7 +108,7 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
 	git checkout v21.1  # aka 3.21.1
 	git submodule update --init --recursive
-	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true"
+	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_LIBPROTOC=ON"
 	make -C build -j$(nproc)
 	make -C build install
 else
@@ -127,6 +127,7 @@ elif [ "${PACKAGE_MANAGER}" == "apt" ]; then
 	apt-get clean -qq
 	rm -rf /var/lib/apt/lists/*
 elif [ "${PACKAGE_MANAGER}" == "dnf" ]; then
+	dnf -y update
  	dnf -y install --allowerasing ${COMPILE_DEPS}
  	dnf clean all
  	rm -rf /var/cache/yum

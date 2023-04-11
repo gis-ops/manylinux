@@ -108,7 +108,7 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
 	git checkout v21.1  # aka 3.21.1
 	git submodule update --init --recursive
-	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_LIBPROTOC=ON"
+	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
 	make -C build -j$(nproc)
 	make -C build install
 else

@@ -85,6 +85,52 @@ clean_pyc /opt/_internal
 # remove cache
 rm -rf /root/.cache
 
+# /START MOD: install osrm-backend dependencies
+COMPILE_DEPS="bzip2-devel readline-devel wget"
+
+if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
+	PACKAGE_MANAGER=yum
+elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
+	PACKAGE_MANAGER=dnf
+else
+	echo "Unsupported policy: '${AUDITWHEEL_POLICY}'"
+	exit 1
+fi
+
+if [ "${PACKAGE_MANAGER}" == "yum" ]; then
+	yum update
+	yum -y install ${COMPILE_DEPS}
+	yum clean all
+	rm -rf /var/cache/yum
+elif [ "${PACKAGE_MANAGER}" == "dnf" ]; then
+	dnf update
+ 	dnf -y install --allowerasing ${COMPILE_DEPS}
+ 	dnf clean all
+ 	rm -rf /var/cache/yum
+else
+	echo "${PACKAGE_MANAGER} is not implemented"
+	exit 1
+fi
+
+mkdir installs && cd installs
+
+TBB_VERSION=oneapi-tbb-2021.3.0
+wget --tries 5 https://github.com/oneapi-src/oneTBB/releases/download/v2021.3.0/${TBB_VERSION}-lin.tgz -O onetbb.tgz
+tar zxvf onetbb.tgz
+cp -a ${TBB_VERSION}/lib/. /usr/local/lib/
+cp -a ${TBB_VERSION}/include/. /usr/local/include/	
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/intel64/gcc4.8/
+
+BOOST_VERSION=boost_1_79_0
+wget --tries 5 https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/${BOOST_VERSION}.tar.bz2 -O boost.tar.bz2
+tar xjf boost.tar.bz2 && cd ${BOOST_VERSION}
+./bootstrap.sh --with-libraries=date_time,chrono,filesystem,iostreams,program_options,regex,system,thread,test
+./b2 install -j$(nproc)
+cd ../
+
+cd ../ && rm -rf install
+# /END MOD
+
 hardlink -cv /opt/_internal
 
 # update system packages

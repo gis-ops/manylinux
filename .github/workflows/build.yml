@@ -10,7 +10,7 @@ on:
         default: true
   push:
     branches:
-      - "osrm_python"
+      - "py-osrm"
     paths-ignore:
       - '*.md'
 

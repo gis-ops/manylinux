@@ -10,7 +10,7 @@ on:
         default: true
   push:
     branches:
-      - "py-osrm"
+      - "osrm_python"
     paths-ignore:
       - '*.md'
 
@@ -20,17 +20,12 @@ concurrency:
 
 jobs:
   build_manylinux:
-    name: ${{ matrix.policy }}_${{ matrix.platform }}
+    name: manylinux_2_28_x86_64
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        policy: ["manylinux2014", "manylinux_2_28"]
-        platform: ["x86_64"]
 
     env:
-      POLICY: ${{ matrix.policy }}
-      PLATFORM: ${{ matrix.platform }}
+      POLICY: manylinux_2_28
+      PLATFORM: x86_64
       COMMIT_SHA: ${{ github.sha }}
 
     steps:
@@ -44,9 +39,9 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || fromJSON(github.event.inputs.useCache)
         uses: actions/cache@v3
         with:
-          path: .buildx-cache-${{ matrix.policy }}_${{ matrix.platform }}/*
-          key: buildx-cache-${{ matrix.policy }}-${{ matrix.platform }}-${{ hashFiles('docker/**') }}
-          restore-keys: buildx-cache-${{ matrix.policy }}-${{ matrix.platform }}-
+          path: .buildx-cache-manylinux_2_28_x86_64/
+          key: buildx-cache-manylinux_2_28_x86_64-${{ hashFiles('docker/**') }}
+          restore-keys: buildx-cache-manylinux_2_28_x86_64-
       
       - name: Get branch name
         run: |
@@ -57,10 +52,10 @@ jobs:
 
       - name: Push image
         run: |
-          docker tag quay.io/pypa/${{ matrix.policy }}_${{ matrix.platform }}:${{ github.sha }} ghcr.io/gis-ops/${{ matrix.policy }}_${{ matrix.platform }}_${{ env.BRANCH }}
-          docker image rm quay.io/pypa/${{ matrix.policy }}_${{ matrix.platform }}:${{ github.sha }}
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/gis-ops/${{ matrix.policy }}_${{ matrix.platform }}_${{ env.BRANCH }}
+        docker tag quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
+        docker image rm quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }}
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        docker push ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
 
   all_passed:
     needs: [build_manylinux]

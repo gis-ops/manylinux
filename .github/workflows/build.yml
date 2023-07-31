@@ -52,10 +52,10 @@ jobs:
 
       - name: Push image
         run: |
-        docker tag quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
-        docker image rm quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }}
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        docker push ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
+          docker tag quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }} ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
+          docker image rm quay.io/pypa/manylinux_2_28_x86_64:${{ github.sha }}
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/gis-ops/manylinux:2_28_${{ env.BRANCH }}
 
   all_passed:
     needs: [build_manylinux]

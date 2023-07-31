@@ -114,6 +114,7 @@ fi
 
 mkdir installs && cd installs
 
+# Install TBB
 TBB_VERSION=oneapi-tbb-2021.3.0
 wget --tries 5 https://github.com/oneapi-src/oneTBB/releases/download/v2021.3.0/${TBB_VERSION}-lin.tgz -O onetbb.tgz
 tar zxvf onetbb.tgz
@@ -121,12 +122,16 @@ cp -a ${TBB_VERSION}/lib/. /usr/local/lib/
 cp -a ${TBB_VERSION}/include/. /usr/local/include/	
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/intel64/gcc4.8/
 
-BOOST_VERSION=boost_1_79_0
-wget --tries 5 https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/${BOOST_VERSION}.tar.bz2 -O boost.tar.bz2
-tar xjf boost.tar.bz2 && cd ${BOOST_VERSION}
-./bootstrap.sh --with-libraries=date_time,chrono,filesystem,iostreams,program_options,regex,system,thread,test
-./b2 install -j$(nproc)
-cd ../
+# Install Conan
+pipx install conan==1.60.1
+
+# Install osrm-backend &&
+git clone https://github.com/Project-OSRM/osrm-backend.git --recursive --depth 1 &&
+cd osrm-backend &&
+mkdir build && cd build &&
+cmake -DENABLE_CONAN=ON -DBUILD_ROUTED=OFF -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-free-nonheap-object" .. &&
+make -j$(nproc) && make install &&
+cd ../../
 
 cd ../ && rm -rf install
 # /END MOD

@@ -4,4 +4,4 @@ Based on https://github.com/pypa/manylinux.
 
 Adaptations:
 
-- install dependencies for osrm-backend
+- install osrm-backend and dependencies

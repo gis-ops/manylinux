@@ -103,7 +103,7 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 	PACKAGE_MANAGER=dnf
 	# valhalla, skip mjolnir deps for now
-	COMPILE_DEPS="libcurl-devel"
+	COMPILE_DEPS="libcurl-devel luajit-devel geos-devel libspatialite-devel"
 	# install protobuf v3.21.1, not sure anymore why we're doing this?!
 	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
 	git checkout v21.1  # aka 3.21.1

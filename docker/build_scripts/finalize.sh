@@ -102,7 +102,7 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	make -C build install
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 	PACKAGE_MANAGER=dnf
-	# valhalla, skip mjolnir deps for now
+	# valhalla
 	COMPILE_DEPS="libcurl-devel luajit-devel geos-devel libspatialite-devel"
 	# install protobuf v3.21.1, not sure anymore why we're doing this?!
 	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
@@ -128,9 +128,11 @@ elif [ "${PACKAGE_MANAGER}" == "apt" ]; then
 	rm -rf /var/lib/apt/lists/*
 elif [ "${PACKAGE_MANAGER}" == "dnf" ]; then
 	dnf -y update
+	dnf -y install epel-release
+	dnf -y update
  	dnf -y install --allowerasing ${COMPILE_DEPS}
  	dnf clean all
- 	rm -rf /var/cache/yum
+ 	rm -rf /var/cache/dnf
 else
 	echo "${PACKAGE_MANAGER} is not implemented"
 	exit 1

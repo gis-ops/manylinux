@@ -127,7 +127,7 @@ pipx install conan==1.60.1
 
 # Install osrm-backend &&
 git clone https://github.com/Project-OSRM/osrm-backend.git --recursive --depth 1 &&
-cd osrm-backend &&
+cd osrm-backend && git checkout db7946d76246cb10a5710c8f2851997417940b55 &&
 mkdir build && cd build &&
 cmake -DENABLE_CONAN=ON -DBUILD_ROUTED=OFF -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-free-nonheap-object" .. &&
 make -j$(nproc) && make install &&

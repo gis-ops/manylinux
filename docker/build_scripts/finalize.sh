@@ -74,11 +74,11 @@ rm -rf /tmp/* || true
 # /MOD START: install valhalla and osrm dependencies
 if [ "${AUDITWHEEL_POLICY}" == "manylinux2010" ] || [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 	PACKAGE_MANAGER=yum
-	COMPILE_DEPS="boost-devel sqlite-devel libspatialite-devel protobuf-devel libcurl-devel luajit-devel geos-devel"
+	COMPILE_DEPS="boost-devel sqlite-devel libspatialite-devel protobuf-devel libcurl-devel luajit-devel geos-devel boost-devel"
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 	PACKAGE_MANAGER=apt
 	# valhalla
-	COMPILE_DEPS="libspatialite-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev"
+	COMPILE_DEPS="libspatialite-dev libgeos-dev libluajit-5.1-dev libcurl4-openssl-dev libgeos++-dev libboost-all-dev"
 	# install protobuf v3.21.1
 	git clone https://github.com/protocolbuffers/protobuf.git && cd protobuf
 	git checkout v21.1  # aka 3.21.1
@@ -89,7 +89,7 @@ elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_24" ]; then
 elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then
 	PACKAGE_MANAGER=dnf
 	# valhalla
-	COMPILE_DEPS="libcurl-devel luajit-devel geos-devel libspatialite-devel"
+	COMPILE_DEPS="libcurl-devel luajit-devel geos-devel libspatialite-devel boost-devel"
 	# install protobuf v3.21.1, not sure anymore why we're doing this?!
 	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
 	git checkout v21.1  # aka 3.21.1

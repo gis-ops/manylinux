@@ -1,0 +1,70 @@
+{
+  "pp37-pypy37_pp73": {
+    "x86_64": {
+      "version": "7.3.9",
+      "download_url": "https://downloads.python.org/pypy/pypy3.7-v7.3.9-linux64.tar.bz2",
+      "sha256": "c58195124d807ecc527499ee19bc511ed753f4f2e418203ca51bc7e3b124d5d1"
+    },
+    "aarch64": {
+      "version": "7.3.9",
+      "download_url": "https://downloads.python.org/pypy/pypy3.7-v7.3.9-aarch64.tar.bz2",
+      "sha256": "dfc62f2c453fb851d10a1879c6e75c31ffebbf2a44d181bb06fcac4750d023fc"
+    },
+    "i686": {
+      "version": "7.3.9",
+      "download_url": "https://downloads.python.org/pypy/pypy3.7-v7.3.9-linux32.tar.bz2",
+      "sha256": "3398cece0167b81baa219c9cd54a549443d8c0a6b553ec8ec13236281e0d86cd"
+    }
+  },
+  "pp38-pypy38_pp73": {
+    "x86_64": {
+      "version": "7.3.11",
+      "download_url": "https://downloads.python.org/pypy/pypy3.8-v7.3.11-linux64.tar.bz2",
+      "sha256": "470330e58ac105c094041aa07bb05676b06292bc61409e26f5c5593ebb2292d9"
+    },
+    "aarch64": {
+      "version": "7.3.11",
+      "download_url": "https://downloads.python.org/pypy/pypy3.8-v7.3.11-aarch64.tar.bz2",
+      "sha256": "9a2fa0b8d92b7830aa31774a9a76129b0ff81afbd22cd5c41fbdd9119e859f55"
+    },
+    "i686": {
+      "version": "7.3.11",
+      "download_url": "https://downloads.python.org/pypy/pypy3.8-v7.3.11-linux32.tar.bz2",
+      "sha256": "a79b31fce8f5bc1f9940b6777134189a1d3d18bda4b1c830384cda90077c9176"
+    }
+  },
+  "pp39-pypy39_pp73": {
+    "x86_64": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.9-v7.3.15-linux64.tar.bz2",
+      "sha256": "f062be307200bde434817e1620cebc13f563d6ab25309442c5f4d0f0d68f0912"
+    },
+    "aarch64": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.9-v7.3.15-aarch64.tar.bz2",
+      "sha256": "03e35fcba290454bb0ccf7ee57fb42d1e63108d10d593776a382c0a2fe355de0"
+    },
+    "i686": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.9-v7.3.15-linux32.tar.bz2",
+      "sha256": "c6209380977066c9e8b96e8258821c70f996004ce1bc8659ae83d4fd5a89ff5c"
+    }
+  },
+  "pp310-pypy310_pp73": {
+    "x86_64": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.10-v7.3.15-linux64.tar.bz2",
+      "sha256": "33c584e9a70a71afd0cb7dd8ba9996720b911b3b8ed0156aea298d4487ad22c3"
+    },
+    "aarch64": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.10-v7.3.15-aarch64.tar.bz2",
+      "sha256": "52146fccaf64e87e71d178dda8de63c01577ec3923073dc69e1519622bcacb74"
+    },
+    "i686": {
+      "version": "7.3.15",
+      "download_url": "https://downloads.python.org/pypy/pypy3.10-v7.3.15-linux32.tar.bz2",
+      "sha256": "75dd58c9abd8b9d78220373148355bc3119febcf27a2c781d64ad85e7232c4aa"
+    }
+  }
+}

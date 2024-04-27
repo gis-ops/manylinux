@@ -17,7 +17,39 @@ else
 	exit 1
 fi
 
+if [ "${AUDITWHEEL_POLICY:0:10}" == "musllinux_" ]; then
+	EXPECTED_PYTHON_COUNT=7
+	EXPECTED_PYTHON_COUNT_ALL=7
+else
+	if [ "${AUDITWHEEL_ARCH}" == "x86_64" ] || [ "${AUDITWHEEL_ARCH}" == "i686" ] || [ "${AUDITWHEEL_ARCH}" == "aarch64" ]; then
+		EXPECTED_PYTHON_COUNT=11
+		EXPECTED_PYTHON_COUNT_ALL=11
+	else
+		EXPECTED_PYTHON_COUNT=7
+		EXPECTED_PYTHON_COUNT_ALL=7
+	fi
+fi
+PYTHON_COUNT=$(manylinux-interpreters list --installed | wc -l)
+if [ ${EXPECTED_PYTHON_COUNT} -ne ${PYTHON_COUNT} ]; then
+	echo "unexpected number of default python installations: ${PYTHON_COUNT}, expecting ${EXPECTED_PYTHON_COUNT}"
+	manylinux-interpreters list --installed
+	exit 1
+fi
+PYTHON_COUNT_ALL=$(manylinux-interpreters list | wc -l)
+if [ ${EXPECTED_PYTHON_COUNT_ALL} -ne ${PYTHON_COUNT_ALL} ]; then
+	echo "unexpected number of overall python installations: ${PYTHON_COUNT_ALL}, expecting ${EXPECTED_PYTHON_COUNT_ALL}"
+	manylinux-interpreters list
+	exit 1
+fi
+manylinux-interpreters ensure-all
+PYTHON_COUNT=$(manylinux-interpreters list --installed | wc -l)
+if [ ${EXPECTED_PYTHON_COUNT_ALL} -ne ${PYTHON_COUNT} ]; then
+	echo "unexpected number of python installations after 'manylinux-python ensure-all': ${PYTHON_COUNT}, expecting ${EXPECTED_PYTHON_COUNT_ALL}"
+	manylinux-interpreters list --installed
+	exit 1
+fi
 
+PYTHON_COUNT=0
 for PYTHON in /opt/python/*/bin/python; do
 	# Smoke test to make sure that our Pythons work, and do indeed detect as
 	# being manylinux compatible:
@@ -26,21 +58,52 @@ for PYTHON in /opt/python/*/bin/python; do
 	$PYTHON $MY_DIR/ssl-check.py
 	IMPLEMENTATION=$(${PYTHON} -c "import sys; print(sys.implementation.name)")
 	PYVERS=$(${PYTHON} -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
-	if [ "${IMPLEMENTATION}" == "pypy" ]; then
-		LINK_PREFIX=pypy
-	else
-		LINK_PREFIX=python
+	if [ "${IMPLEMENTATION}" == "cpython" ]; then
 		# Make sure sqlite3 module can be loaded properly and is the manylinux version one
 		# c.f. https://github.com/pypa/manylinux/issues/1030
 		$PYTHON -c 'import sqlite3; print(sqlite3.sqlite_version); assert sqlite3.sqlite_version_info[0:2] >= (3, 34)'
 		# Make sure tkinter module can be loaded properly
 		$PYTHON -c 'import tkinter; print(tkinter.TkVersion); assert tkinter.TkVersion >= 8.6'
+		# cpython shall be available as python
+		LINK_VERSION=$(python${PYVERS} -VV)
+		REAL_VERSION=$(${PYTHON} -VV)
+		test "${LINK_VERSION}" = "${REAL_VERSION}"
 	fi
-	# pythonX.Y / pypyX.Y shall be available directly in PATH
-	LINK_VERSION=$(${LINK_PREFIX}${PYVERS} -V)
-	REAL_VERSION=$(${PYTHON} -V)
+	# cpythonX.Y / pypyX.Y shall be available directly in PATH
+	LINK_VERSION=$(${IMPLEMENTATION}${PYVERS} -VV)
+	REAL_VERSION=$(${PYTHON} -VV)
 	test "${LINK_VERSION}" = "${REAL_VERSION}"
+
+	# check a simple project can be built
+	SRC_DIR=/tmp/forty-two-${IMPLEMENTATION}${PYVERS}
+	DIST_DIR=/tmp/dist-${IMPLEMENTATION}${PYVERS}
+	cp -rf ${MY_DIR}/forty-two ${SRC_DIR}
+	PY_ABI_TAGS=$(basename $(dirname $(dirname $PYTHON)))
+	EXPECTED_WHEEL_NAME=forty_two-0.1.0-${PY_ABI_TAGS}-linux_${AUDITWHEEL_ARCH}.whl
+	${PYTHON} -m build -w -o ${DIST_DIR} ${SRC_DIR}
+	if [ ! -f ${DIST_DIR}/${EXPECTED_WHEEL_NAME} ]; then
+		echo "unexcpected wheel built: '$(basename $(find ${DIST_DIR} -name '*.whl'))' instead  of '${EXPECTED_WHEEL_NAME}'"
+		exit 1
+	fi
+	auditwheel repair --only-plat -w ${DIST_DIR} ${DIST_DIR}/${EXPECTED_WHEEL_NAME}
+	REPAIRED_WHEEL=$(find ${DIST_DIR} -name "forty_two-0.1.0-${PY_ABI_TAGS}-*${AUDITWHEEL_POLICY}_${AUDITWHEEL_ARCH}*.whl")
+	if [ ! -f "${REPAIRED_WHEEL}" ]; then
+		echo "invalid repaired wheel name"
+		exit 1
+	fi
+	${PYTHON} -m pip install ${REPAIRED_WHEEL}
+	if [ "$(${PYTHON} -c 'import forty_two; print(forty_two.answer())')" != "42" ]; then
+		echo "invalid answer, expecting 42"
+		exit 1
+	fi
+
+	PYTHON_COUNT=$(( $PYTHON_COUNT + 1 ))
 done
+if [ ${EXPECTED_PYTHON_COUNT_ALL} -ne ${PYTHON_COUNT} ]; then
+	echo "all python installations were not tested: ${PYTHON_COUNT}, expecting ${EXPECTED_PYTHON_COUNT_ALL}"
+	ls /opt/python
+	exit 1
+fi
 
 # minimal tests for tools that should be present
 auditwheel --version

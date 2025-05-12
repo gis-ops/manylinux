@@ -7,8 +7,9 @@ The goal of the manylinux project is to provide a convenient way to
 distribute binary Python extensions as wheels on Linux.
 This effort has produced `PEP 513 <https://www.python.org/dev/peps/pep-0513/>`_ (manylinux1),
 `PEP 571 <https://www.python.org/dev/peps/pep-0571/>`_ (manylinux2010),
-`PEP 599 <https://www.python.org/dev/peps/pep-0599/>`_ (manylinux2014) and
-`PEP 600 <https://www.python.org/dev/peps/pep-0600/>`_ (manylinux_x_y).
+`PEP 599 <https://www.python.org/dev/peps/pep-0599/>`_ (manylinux2014),
+`PEP 600 <https://www.python.org/dev/peps/pep-0600/>`_ (manylinux_x_y) and
+`PEP 656 <https://www.python.org/dev/peps/pep-0656/>`_ (musllinux_x_y).
 
 PEP 513 defined ``manylinux1_x86_64`` and ``manylinux1_i686`` platform tags
 and the wheels were built on Centos5. Centos5 reached End of Life (EOL) on
@@ -18,32 +19,26 @@ PEP 571 defined ``manylinux2010_x86_64`` and ``manylinux2010_i686`` platform
 tags and the wheels were built on Centos6. Centos6 reached End of Life (EOL)
 on November 30th, 2020.
 
-PEP 599 defines the following platform tags:
-
-- ``manylinux2014_x86_64``
-
-- ``manylinux2014_i686``
-
-- ``manylinux2014_aarch64``
-
-- ``manylinux2014_armv7l``
-
-- ``manylinux2014_ppc64``
-
-- ``manylinux2014_ppc64le``
-
-- ``manylinux2014_s390x``
-
-Wheels are built on CentOS 7 which will reach End of Life (EOL)
-on June 30th, 2024.
+PEP 599 defines the following platform tags: ``manylinux2014_x86_64``,
+``manylinux2014_i686``, ``manylinux2014_aarch64``, ``manylinux2014_armv7l``,
+``manylinux2014_ppc64``, ``manylinux2014_ppc64le`` and ``manylinux2014_s390x``.
+Wheels are built on CentOS 7. CentOS 7 reached End of Life (EOL) on June 30th, 2024.
 
 PEP 600 has been designed to be "future-proof" and does not enforce specific symbols and a specific distro to build.
-It only states that a wheel tagged ``manylinux_x_y`` shall work on any distro based on ``glibc>=x.y``.
+It only states that a wheel tagged ``manylinux_x_y`` shall work on any distro based on ``glibc>=x.y``. PEP 656 added
+``musllinux_x_y`` tags for ``musl>=x.y``.
+
+An overview of distros per glibc version is available at `pep600_compliance <https://github.com/mayeut/pep600_compliance?tab=readme-ov-file#distro-compatibility>`_.
+
 The manylinux project supports:
 
-- ``manylinux_2_24`` images for ``x86_64``, ``i686``, ``aarch64``, ``ppc64le`` and ``s390x``.
+- ``manylinux2014`` images for ``x86_64``, ``i686``, ``aarch64``, ``ppc64le`` and ``s390x``.
 
 - ``manylinux_2_28`` images for ``x86_64``, ``aarch64``, ``ppc64le`` and ``s390x``.
+
+- ``manylinux_2_34`` images for ``x86_64``, ``aarch64``, ``ppc64le`` and ``s390x``.
+
+- ``musllinux_1_2`` images for ``x86_64``, ``i686``, ``aarch64``, ``ppc64le``, ``s390x`` and ``armv7l``.
 
 
 Wheel packages compliant with those tags can be uploaded to
@@ -98,20 +93,85 @@ etc., we provide `Docker <https://docker.com/>`_ images where we've
 done the work for you. The images are uploaded to `quay.io`_ and are tagged
 for repeatable builds.
 
+manylinux_2_34 (AlmaLinux 9 based) - ALPHA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Caveat:
+On x86_64, RHEL 9+ derivatives are using x86-64-v2 target architecture.
+While manylinux worked around that when building from sources by intercepting compiler calls to target
+x86_64 instead, every library installed with dnf will most likely target the more recent x86-64-v2 which, if
+grafted into a wheel, will fail to run on older hardware. There's no PEP to handle micro-architecture variants
+yet when it comes to packaging or installing wheels. Auditwheel doesn't detect this either.
+See https://github.com/pypa/manylinux/issues/1725
+
+Toolchain: GCC 14
+
+- x86_64 image: ``quay.io/pypa/manylinux_2_34_x86_64``
+- aarch64 image: ``quay.io/pypa/manylinux_2_34_aarch64``
+- ppc64le image: ``quay.io/pypa/manylinux_2_34_ppc64le``
+- s390x image: ``quay.io/pypa/manylinux_2_34_s390x``
+
+Built wheels are also expected to be compatible with other
+distros using glibc 2.34 or later, including:
+
+- Debian 12+
+- Ubuntu 21.10+
+- Fedora 35+
+- CentOS/RHEL 9+
+
+
+
+manylinux_2_31 (Ubuntu 20.04 based) - armv7l only - BETA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Caveat:
+
+Only Debian derivatives are available for armv7l. They do not provide recent builds of the GCC toolchain
+compatible with a vanilla install of the distribution. As such, we only get the GCC toolchain shipped with
+the base distribution.
+
+The package manager & packages names are different than what is found on other manylinux images.
+Other images are using RHEL derivatives only for now so using yum/dnf as a package manager and RHEL like
+packages names this image is using apt and Debian like packages names.
+
+If one depends on let's say OpenSSL development package, then, the commands to issue to install it are a bit different:
+
+- ``dnf -y install openssl-devel`` on RHEL derivatives
+- ``apt-get update && apt-get install -y libssl-dev`` on Debian derivatives
+
+
+Toolchain: GCC 9
+
+- armv7l image: ``quay.io/pypa/manylinux_2_31_armv7l``
+
+Built wheels are also expected to be compatible with other
+distros using glibc 2.31 or later, including:
+
+- Debian 11+
+- Ubuntu 20.04+
+
 
 manylinux_2_28 (AlmaLinux 8 based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Toolchain: GCC 12
+Toolchain: GCC 14
 
 - x86_64 image: ``quay.io/pypa/manylinux_2_28_x86_64``
 - aarch64 image: ``quay.io/pypa/manylinux_2_28_aarch64``
 - ppc64le image: ``quay.io/pypa/manylinux_2_28_ppc64le``
 - s390x image: ``quay.io/pypa/manylinux_2_28_s390x``
 
+Built wheels are also expected to be compatible with other
+distros using glibc 2.28 or later, including:
 
-manylinux2014 (CentOS 7 based)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Debian 10+
+- Ubuntu 18.10+
+- Fedora 29+
+- CentOS/RHEL 8+
+
+
+manylinux2014 (CentOS 7 based, glibc 2.17)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Toolchain: GCC 10
 
@@ -120,6 +180,14 @@ Toolchain: GCC 10
 - aarch64 image: ``quay.io/pypa/manylinux2014_aarch64``
 - ppc64le image: ``quay.io/pypa/manylinux2014_ppc64le``
 - s390x image: ``quay.io/pypa/manylinux2014_s390x``
+
+Built wheels are also expected to be compatible with other
+distros using glibc 2.17 or later, including:
+
+- Debian 8+
+- Ubuntu 13.10+
+- Fedora 19+
+- RHEL 7+
 
 
 manylinux_2_24 (Debian 9 based) - EOL
@@ -138,8 +206,8 @@ Toolchain: GCC 6
 - s390x image: ``quay.io/pypa/manylinux_2_24_s390x``
 
 
-manylinux2010 (CentOS 6 based - EOL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+manylinux2010 (CentOS 6 based, glibc 2.12 - EOL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Support for ``manylinux2010`` has `ended on August 1st, 2022 <https://github.com/pypa/manylinux/issues/1281>`_.
 
@@ -149,10 +217,10 @@ Toolchain: GCC 8
 - i686 image: ``quay.io/pypa/manylinux2010_i686``
 
 
-manylinux1 (CentOS 5 based - EOL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+manylinux1 (CentOS 5 based, glibc 2.5 - EOL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Code and details regarding ``manylinux1`` can be found in the `manylinux1 branch <https://github.com/pypa/manylinux/tree/manylinux1>`_.
+Code and details regarding ``manylinux1`` can be found in the `manylinux1 tag <https://github.com/pypa/manylinux/tree/v2024.04.29-manylinux1>`_.
 
 Support for ``manylinux1`` has `ended on January 1st, 2022 <https://github.com/pypa/manylinux/issues/994>`_.
 
@@ -162,7 +230,34 @@ Toolchain: GCC 4.8
 - i686 image: ``quay.io/pypa/manylinux1_i686``
 
 
-All images are rebuilt using GitHub Actions / Travis-CI on every commit to this
+musllinux_1_2 (Alpine Linux 3.21 based, 3.13+ compatible)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Toolchain: GCC 14
+
+- x86_64 image: ``quay.io/pypa/musllinux_1_2_x86_64``
+- i686 image: ``quay.io/pypa/musllinux_1_2_i686``
+- aarch64 image: ``quay.io/pypa/musllinux_1_2_aarch64``
+- ppc64le image: ``quay.io/pypa/musllinux_1_2_ppc64le``
+- s390x image: ``quay.io/pypa/musllinux_1_2_s390x``
+- armv7l image: ``quay.io/pypa/musllinux_1_2_armv7l``
+
+
+musllinux_1_1 (Alpine Linux 3.12 based - EOL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Support for ``musllinux_1_1`` has `ended on November 1st, 2024 <https://github.com/pypa/manylinux/issues/1629>`_.
+
+Toolchain: GCC 9
+
+- x86_64 image: ``quay.io/pypa/musllinux_1_1_x86_64``
+- i686 image: ``quay.io/pypa/musllinux_1_1_i686``
+- aarch64 image: ``quay.io/pypa/musllinux_1_1_aarch64``
+- ppc64le image: ``quay.io/pypa/musllinux_1_1_ppc64le``
+- s390x image: ``quay.io/pypa/musllinux_1_1_s390x``
+
+
+All supported images are rebuilt using GitHub Actions / Travis-CI on every commit to this
 repository; see the
 `docker/ <https://github.com/pypa/manylinux/tree/main/docker>`_
 directory for source code.
@@ -171,18 +266,29 @@ directory for source code.
 Image content
 ~~~~~~~~~~~~~
 
-All images currently contain:
+All supported images currently contain:
 
-- CPython 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 and PyPy 3.7, 3.8, 3.9, 3.10 installed in
+- CPython 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t and PyPy 3.8, 3.9, 3.10 installed in
   ``/opt/python/<python tag>-<abi tag>``. The directories are named
   after the PEP 425 tags for each environment --
-  e.g. ``/opt/python/cp37-cp37m`` contains a CPython 3.7 build, and
+  e.g. ``/opt/python/cp313-cp313`` contains a CPython 3.13 build, and
   can be used to produce wheels named like
-  ``<pkg>-<version>-cp37-cp37m-<arch>.whl``.
+  ``<pkg>-<version>-cp313-cp313-<arch>.whl``.
 
 - Development packages for all the libraries that PEP 571/599 list. One should not assume the presence of any other development package.
 
-- The `auditwheel <https://pypi.python.org/pypi/auditwheel>`_ tool
+- The following development tools, installed via `pipx <https://pypi.org/p/pipx>`_ (which is also available):
+   - `auditwheel <https://pypi.org/p/auditwheel>`_
+   - `cmake <https://pypi.org/p/cmake>`_
+   - `patchelf <https://pypi.org/p/patchelf>`_
+   - `swig <https://pypi.org/p/swig>`_
+   - `uv <https://pypi.org/p/uv>`_ (not available on ``musllinux ppc64le`` & ``musllinux s390x`` yet due to Rust limitations)
+
+- All Python interpreters have the following packages pre-installed:
+   - `pip <https://pypi.org/p/pip>`_
+   - `build <https://pypi.org/p/build>`_
+   - `packaging <https://pypi.org/p/packaging>`_
+   - Before Python 3.12, `setuptools <https://pypi.org/p/setuptools>`_ and `wheel <https://pypi.org/p/wheel>`_ are also available.
 
 - The manylinux-interpreters tool which allows to list all available interpreters & install ones missing from the image
 
@@ -235,7 +341,7 @@ default ``sys.abiflags`` became an empty string: the ``m`` flag for pymalloc
 became useless (builds with and without pymalloc are ABI compatible) and so has
 been removed. (e.g. ``/opt/python/cp38-cp38``)
 
-Note that PyPy is not available on ppc64le & s390x.
+Note that PyPy is not available on ppc64le & s390x or on the musllinux images.
 
 Building Docker images
 ----------------------
@@ -252,11 +358,10 @@ details.
 Updating the requirements
 -------------------------
 
-The requirement files are pinned and controlled by pip-tools compile. To update
-the pins, run nox on a Linux system with all supported versions of Python included.
-For example, using a docker image:
+The requirement files are pinned and controlled by uv compile. To update
+the pins, run:
 
-    $ docker run --rm -v $PWD:/nox -t quay.io/pypa/manylinux2014_x86_64:latest pipx run nox -f /nox/noxfile.py -s update_python_dependencies update_python_tools
+    $ nox -s update_python_dependencies
 
 Updating the native dependencies
 --------------------------------

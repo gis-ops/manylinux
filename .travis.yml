@@ -1,6 +1,10 @@
 language: c
 os: linux
-dist: focal
+dist: jammy
+addons:
+  apt:
+    packages:
+    - docker-buildx
 services:
   - docker
 
@@ -22,36 +26,18 @@ env:
 
 jobs:
    include:
-    - arch: arm64-graviton2
-      virt: vm
-      group: edge
-      env: POLICY="manylinux2014" PLATFORM="aarch64"
     - arch: s390x
       env: POLICY="manylinux2014" PLATFORM="s390x"
     - arch: ppc64le
       env: POLICY="manylinux2014" PLATFORM="ppc64le"
-    - arch: arm64-graviton2
-      virt: vm
-      group: edge
-      env: POLICY="manylinux_2_28" PLATFORM="aarch64"
     - arch: s390x
       env: POLICY="manylinux_2_28" PLATFORM="s390x"
     - arch: ppc64le
       env: POLICY="manylinux_2_28" PLATFORM="ppc64le"
-    - arch: arm64-graviton2
-      virt: vm
-      group: edge
-      env: POLICY="musllinux_1_1" PLATFORM="aarch64"
     - arch: s390x
-      env: POLICY="musllinux_1_1" PLATFORM="s390x"
+      env: POLICY="manylinux_2_34" PLATFORM="s390x"
     - arch: ppc64le
-      env: POLICY="musllinux_1_1" PLATFORM="ppc64le"
-    - arch: arm64-graviton2
-      virt: vm
-      group: edge
-      env: POLICY="musllinux_1_2" PLATFORM="aarch64"
-    - arch: s390x
-      env: POLICY="musllinux_1_2" PLATFORM="s390x"
+      env: POLICY="manylinux_2_34" PLATFORM="ppc64le"
     - arch: ppc64le
       env: POLICY="musllinux_1_2" PLATFORM="ppc64le"
 
@@ -59,17 +45,17 @@ before_install:
   - if [ -d "${HOME}/buildx-cache/.buildx-cache-${POLICY}_${PLATFORM}" ]; then cp -rlf ${HOME}/buildx-cache/.buildx-cache-${POLICY}_${PLATFORM} ./; fi
 
 install:
-  - uptime
-  - nproc
-  - free
-  - cat /proc/cpuinfo
-  - ./travisci-install-buildx.sh
+  - docker version
+  - docker buildx version
+  - docker buildx create --name builder-manylinux --driver docker-container --use
+  - docker buildx inspect --bootstrap --builder builder-manylinux 2>&1 | tee /dev/null
 
 script: |
-  BUILD_STATUS=success
   (while true; do echo "travis_wait"; docker stats --no-stream; free; df -h; sleep 30; done) &
   WAIT_PID=$!
-  COMMIT_SHA=${TRAVIS_COMMIT} ./build.sh || BUILD_STATUS=failed
+  disown
+  BUILD_STATUS=success
+  COMMIT_SHA=${TRAVIS_COMMIT} ./build.sh 2>&1 || BUILD_STATUS=failed
   kill -9 ${WAIT_PID}
   if [ "${BUILD_STATUS}" != "success" ]; then
     exit 1
@@ -84,11 +70,8 @@ script: |
 
 deploy:
   provider: script
+  dpl_version: 1.10.16
   script: COMMIT_SHA=${TRAVIS_COMMIT} ./deploy.sh
   on:
     branch: main
     repo: pypa/manylinux
-
-after_script:
-  - if [ -f ${HOME}/dockerd-rootless.pid ]; then kill -15 $(cat ${HOME}/dockerd-rootless.pid); fi
-  - if [ -f /tmp/buildkitd.pid ]; then sudo kill -15 $(cat /tmp/buildkitd.pid); fi

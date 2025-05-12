@@ -1,38 +1,47 @@
 import os
-import re
 from pathlib import Path
 
 import nox
 
+nox.needs_version = ">=2024.4.15"
+nox.options.default_venv_backend = "uv|virtualenv"
+nox.options.sessions = ["lint"]
 
-@nox.session(python=["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"])
+
+@nox.session
 def update_python_dependencies(session):
-    session.install("pip-tools")
+    """Update the base and per-python dependencies lock files"""
+    if getattr(session.virtualenv, "venv_backend", "") != "uv":
+        session.install("uv>=0.1.23")
+
     env = os.environ.copy()
     # CUSTOM_COMPILE_COMMAND is a pip-compile option that tells users how to
     # regenerate the constraints files
-    env["CUSTOM_COMPILE_COMMAND"] = f"nox -s {session.name}"
-    session.run(
-        "pip-compile",
-        "--generate-hashes",
-        "requirements.in",
-        "--allow-unsafe",
-        "--upgrade",
-        "--output-file",
-        f"docker/build_scripts/requirements{session.python}.txt",
-        env=env,
-    )
+    env["UV_CUSTOM_COMPILE_COMMAND"] = f"nox -s {session.name}"
 
+    for python_minor in range(8, 15):
+        python_version = f"3.{python_minor}"
+        session.run(
+            "uv",
+            "pip",
+            "compile",
+            f"--python-version={python_version}",
+            "--generate-hashes",
+            "--no-strip-markers",
+            "requirements.in",
+            "--upgrade",
+            "--output-file",
+            f"docker/build_scripts/requirements{python_version}.txt",
+            env=env,
+        )
 
-@nox.session(python="3.10")
-def update_python_tools(session):
-    session.install("pip-tools")
-    env = os.environ.copy()
-    # CUSTOM_COMPILE_COMMAND is a pip-compile option that tells users how to
-    # regenerate the constraints files
-    env["CUSTOM_COMPILE_COMMAND"] = f"nox -s {session.name}"
+    # tools
+    python_version = "3.12"
     session.run(
-        "pip-compile",
+        "uv",
+        "pip",
+        "compile",
+        f"--python-version={python_version}",
         "--generate-hashes",
         "requirements-base-tools.in",
         "--upgrade",
@@ -47,7 +56,10 @@ def update_python_tools(session):
         tmp_file = Path(session.create_tmp()) / f"{tool}.in"
         tmp_file.write_text(f"{tool}\n")
         session.run(
-            "pip-compile",
+            "uv",
+            "pip",
+            "compile",
+            f"--python-version={python_version}",
             "--generate-hashes",
             str(tmp_file),
             "--upgrade",
@@ -57,13 +69,26 @@ def update_python_tools(session):
         )
 
 
-@nox.session(python="3.11", reuse_venv=True)
+@nox.session(python="3.12", reuse_venv=True)
 def update_native_dependencies(session):
-    session.install("lastversion>=3.5.0", "packaging", "requests")
-    session.run("python", "tools/update_native_dependencies.py", *session.posargs)
+    """Update the native dependencies"""
+    script = "tools/update_native_dependencies.py"
+    deps = nox.project.load_toml(script)["dependencies"]
+    session.install(*deps)
+    session.run("python", script, *session.posargs)
 
 
-@nox.session(python="3.11", reuse_venv=True)
+@nox.session(python="3.12", reuse_venv=True)
 def update_interpreters_download(session):
-    session.install("packaging", "requests")
-    session.run("python", "tools/update_interpreters_download.py", *session.posargs)
+    """Update all the Python interpreters"""
+    script = "tools/update_interpreters_download.py"
+    deps = nox.project.load_toml(script)["dependencies"]
+    session.install(*deps)
+    session.run("python", script, *session.posargs)
+
+
+@nox.session(python="3.12", reuse_venv=True)
+def lint(session: nox.Session) -> None:
+    """Run linters on the codebase."""
+    session.install("pre-commit")
+    session.run("pre-commit", "run", "--all-files")

@@ -45,8 +45,9 @@ else
 fi
 
 # RUNTIME_DEPS: Runtime dependencies. c.f. install-build-packages.sh
+# MOD: install a few more RUNTIME_DEPS for rhel to build Valhalla
 if [ "${OS_ID_LIKE}" == "rhel" ]; then
-	RUNTIME_DEPS=(zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb)
+	RUNTIME_DEPS=(czmq-devel openssl-devel ccache wget git zlib bzip2 expat ncurses readline gdbm libpcap xz openssl keyutils-libs libkadm5 libcom_err libcurl uuid libffi libdb)
 	if [ "${AUDITWHEEL_POLICY}" == "manylinux2014" ]; then
 		RUNTIME_DEPS+=(libidn libXft)
 	elif [ "${AUDITWHEEL_POLICY}" == "manylinux_2_28" ]; then

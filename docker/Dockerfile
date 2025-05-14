@@ -38,9 +38,21 @@ COPY build_scripts/install-runtime-packages.sh \
      build_scripts/update-system-packages.sh \
      build_scripts/build_utils.sh \
      /build_scripts/
-RUN manylinux-entrypoint /build_scripts/install-runtime-packages.sh && rm -rf /build_scripts/
+RUN manylinux-entrypoint /build_scripts/install-runtime-packages.sh \
+    && rm -rf /build_scripts/
 
 COPY build_scripts/build_utils.sh /build_scripts/
+
+COPY build_scripts/install-cmake.sh /build_scripts/
+RUN export CMAKE_ROOT=cmake-3.31.7 && \
+    export CMAKE_HASH=a6d2eb1ebeb99130dfe63ef5a340c3fdb11431cce3d7ca148524c125924cea68 && \
+    export CMAKE_DOWNLOAD_URL=https://github.com/Kitware/CMake/releases/download/v3.31.7 && \
+    manylinux-entrypoint /build_scripts/install-cmake.sh
+
+COPY build_scripts/install-prime_server.sh /build_scripts/
+RUN export PRIME_ROOT=prime_server-0.7.0 && \
+    export PRIME_DOWNLOAD_URL=https://github.com/kevinkreiser/prime_server/archive/refs/tags && \
+    manylinux-entrypoint /build_scripts/install-prime_server.sh
 
 COPY build_scripts/install-autoconf.sh /build_scripts/
 RUN export AUTOCONF_ROOT=autoconf-2.72 && \

@@ -24,14 +24,6 @@ if [ "${OS_ID_LIKE}" = "rhel" ]; then
 	else
 		COMPILE_DEPS+=(libidn2-devel tk-devel)
 	fi
-	COMPILE_DEPS+=(boost-devel sqlite-devel libspatialite-devel libcurl-devel luajit-devel geos-devel boost-devel gdal-devel)
-	# install protobuf v3.21.1, not sure anymore why we're upgrading this?!
-	git clone --recurse-submodules https://github.com/protocolbuffers/protobuf.git && cd protobuf
-	git checkout v21.1  # aka 3.21.1
-	git submodule update --init --recursive
-	cmake -B build "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
-	make -C build -j$(nproc)
-	make -C build install
 elif [ "${OS_ID_LIKE}" == "debian" ]; then
 	COMPILE_DEPS=(libbz2-dev libncurses-dev libreadline-dev tk-dev libgdbm-dev libdb-dev libpcap-dev liblzma-dev openssl libssl-dev libkeyutils-dev libkrb5-dev comerr-dev libidn2-0-dev libcurl4-openssl-dev uuid-dev libffi-dev linux-headers-generic)
 elif [ "${OS_ID_LIKE}" == "alpine" ]; then
